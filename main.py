@@ -75,21 +75,50 @@ async def handle(request):
 	# check the id
 	if uid not in files:
 		return web.Response(status=404, text="404")
-
-	resp = web.StreamResponse()
-	# set headers
-	resp.content_length = files[uid][0].size
-	resp.content_type = files[uid][0].mime_type
-	resp.headers.add("Content-Disposition", 'attachment; filename="' + files[uid][2] + '"')
-	await resp.prepare(request)
-	# create a session to download the file
+	# get the range header
+	r = request.headers.get("range")
+	# start a session
 	name = RandomName()
 	client = TelegramClient(name, api_id, api_hash)
 	await client.start(bot_token=bot_token)
-	await client.download_media(files[uid][0],file=resp)
+	if r == None:
+		resp = web.StreamResponse()
+		# set headers
+		resp.content_length = files[uid][0].size
+		resp.content_type = files[uid][0].mime_type
+		resp.headers.add("Content-Disposition", 'attachment; filename="' + files[uid][2] + '"')
+		resp.headers.add("Accept-Ranges","bytes")
+		await resp.prepare(request)
+		# normally stream the file
+		await client.download_media(message=files[uid][0],file=resp)
+	else:
+		resp = web.StreamResponse(status=206)
+		resp.content_type = files[uid][0].mime_type
+		resp.headers.add("Content-Disposition", 'attachment; filename="' + files[uid][2] + '"')
+		resp.headers.add("Accept-Ranges","bytes")
+		# get the range
+		r = r[6:]
+		splitRange = r.split("-")
+		begin = int(splitRange[0])
+		end = files[uid][0].size
+		if splitRange[1] != "":
+			end = int(splitRange[1])
+		toGet = end - begin + 1
+		resp.content_length = toGet
+		await resp.prepare(request)
+		# now get them
+		downloaded = 0
+		async for chunk in client.iter_download(file=files[uid][0], offset=begin, file_size=files[uid][0].size, request_size=4096): # I cannot change the request-size
+			downloaded += len(chunk)
+			if downloaded <= toGet:
+				await resp.write(chunk)
+			else:
+				await resp.write(chunk[:toGet % 65536])
+				break
+		
+	# delete the session files
 	await resp.write_eof()
 	await client.disconnect()
-	# delete the session files
 	os.remove(name + ".session")
 	return resp
 
