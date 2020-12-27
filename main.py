@@ -47,7 +47,7 @@ async def StartBot():
 		# Get the updates
 		@client.on(events.NewMessage)
 		async def my_event_handler(event):
-			if event.message.from_id not in admins: # Check admins; If you want to create a public bot just remove these two lines
+			if len(admins) != 0 and event.peer_id.user_id not in admins and event.message.from_id not in admins: # Check admins; If you want to create a public, empty the admin set
 				return
 			if event.document == None: # Check if they have file
 				await event.reply('Please send me a file to convert it into a link. Links are valid for 24 hours')

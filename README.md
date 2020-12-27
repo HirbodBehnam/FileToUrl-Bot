@@ -18,12 +18,7 @@ pip3 install aiohttp telethon cryptg
 ```
 Now clone this repository and edit `main.py` file. Change `Domain`, `Port`, `api_id`, `api_hash` and `bot_token`.
 
-If you want to make a public bot, remove these two lines from `main.py`:
-```python
-if event.message.from_id not in admins:
-	return
-```
-If you want to create a private bot, add your id (which is an int) to `admins` set.
+If you want to create a private bot, add your id (which is an int) to `admins` set; Otherwise everyone can use your bot.
 
 If you want to use TLS webserver, add `ssl_context` to `web._run_app(app, port=Port)`. [More Info](https://docs.aiohttp.org/en/stable/web_reference.html#aiohttp.web.run_app)
 
