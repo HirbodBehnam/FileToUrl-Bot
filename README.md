@@ -13,8 +13,8 @@ A Telegram bot to convert files to URL without disk usage
 I have tested this bot on Python 3.6.9. I'm not sure if it works on older versions or not.
 
 First install some pip packages:
-```
-pip3 install aiohttp telethon cryptg
+```sh
+python3 -m pip install --user -r requirements.txt
 ```
 Now clone this repository and edit `main.py` file. Change `Domain`, `Port`, `api_id`, `api_hash` and `bot_token`.
 
@@ -22,4 +22,8 @@ If you want to create a private bot, add your id (which is an int) to `admins` s
 
 If you want to use TLS webserver, add `ssl_context` to `web._run_app(app, port=Port)`. [More Info](https://docs.aiohttp.org/en/stable/web_reference.html#aiohttp.web.run_app)
 
-Now simply run `main.py` with python.
+Now simply run
+
+```sh
+python3 main.py
+```
